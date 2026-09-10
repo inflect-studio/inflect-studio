@@ -471,8 +471,7 @@ if (!$projects) {
         }
 
         .service-panel__intro {
-            position: sticky;
-            top: calc(var(--header-height) + 70px);
+            position: static;
             align-self: start;
         }
 
@@ -1595,8 +1594,7 @@ if (!$projects) {
         }
 
         .service-continuation__header {
-            position: sticky;
-            top: calc(var(--header-height) + 70px);
+            position: static;
             align-self: start;
             margin-bottom: 0;
         }
