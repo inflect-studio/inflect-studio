@@ -1579,6 +1579,40 @@ if (!$projects) {
 .pillar[data-service="character"]{--hx:50%;--hy:48%;}
 .pillar[data-service="presence"]{--hx:50%;--hy:48%;}
 
+
+        /* Continuous services view */
+        .service-continuation {
+            margin-top: clamp(110px, 14vh, 190px);
+            padding-top: clamp(72px, 9vh, 120px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .service-continuation__header {
+            margin-bottom: clamp(48px, 6vh, 82px);
+        }
+
+        .service-continuation__header .service-panel__title {
+            font-size: clamp(48px, 5.8vw, 96px);
+        }
+
+        .service-continuation__header .service-panel__lead {
+            max-width: 760px;
+        }
+
+        .service-continuation__list {
+            width: 100%;
+        }
+
+        @media (max-width: 820px) {
+            .service-continuation {
+                margin-top: 88px;
+                padding-top: 64px;
+            }
+
+            .service-continuation__header {
+                margin-bottom: 42px;
+            }
+        }
 </style>
 
 
@@ -5005,17 +5039,18 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         }
 
         function renderService(serviceKey) {
-            const service = services[serviceKey];
+            const order = [serviceKey, ...(serviceLoop[serviceKey] || []).map(item => item.key)];
+            const firstService = services[serviceKey];
 
-            if (!service) {
+            if (!firstService) {
                 return;
             }
 
-            serviceEyebrow.textContent = service.eyebrow;
-            serviceTitle.textContent = service.title;
-            serviceLead.textContent = service.lead;
+            serviceEyebrow.textContent = firstService.eyebrow;
+            serviceTitle.textContent = firstService.title;
+            serviceLead.textContent = firstService.lead;
 
-            serviceList.innerHTML = service.steps
+            const renderSteps = (service) => service.steps
                 .map((step, index) => {
                     const number = String(index + 1).padStart(2, "0");
 
@@ -5030,14 +5065,26 @@ body:not(.hero-pillars-ready) .hero-hover-image {
                         </article>
                     `;
                 })
-                .join("") + renderServiceLoop(serviceKey);
+                .join("");
 
-            serviceList.querySelectorAll("[data-next-service]").forEach((button) => {
-                button.addEventListener("click", () => {
-                    const nextKey = button.dataset.nextService;
-                    openService(nextKey, pillarForService(nextKey));
-                });
-            });
+            serviceList.innerHTML =
+                renderSteps(firstService) +
+                order.slice(1).map((key) => {
+                    const service = services[key];
+
+                    return `
+                        <section class="service-continuation" data-service-section="${key}">
+                            <header class="service-continuation__header">
+                                <div class="service-panel__eyebrow">${service.eyebrow}</div>
+                                <h2 class="service-panel__title">${service.title}</h2>
+                                <p class="service-panel__lead">${service.lead}</p>
+                            </header>
+                            <div class="service-continuation__list">
+                                ${renderSteps(service)}
+                            </div>
+                        </section>
+                    `;
+                }).join("");
         }
 
         function syncBodyLock() {
