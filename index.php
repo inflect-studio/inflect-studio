@@ -1624,6 +1624,26 @@ if (!$projects) {
                 margin-bottom: 0;
             }
         }
+
+        /* Sticky pillar labels + single CTA at the end of the full services flow */
+        @media (min-width: 821px) {
+            .service-panel__intro,
+            .service-continuation__header {
+                position: sticky;
+                top: calc(var(--header-height) + var(--space-6));
+                align-self: start;
+            }
+
+            .service-panel__cta--desktop {
+                display: none !important;
+            }
+
+            .service-panel__cta--mobile {
+                grid-column: 1 / -1;
+                width: 100%;
+                margin-top: clamp(90px, 12vh, 160px);
+            }
+        }
 </style>
 
 
@@ -5100,6 +5120,9 @@ body:not(.hero-pillars-ready) .hero-hover-image {
                 `;
                 inner.appendChild(section);
             });
+
+            const endCta = inner.querySelector(".service-panel__cta--mobile");
+            if (endCta) inner.appendChild(endCta);
         }
 
         function syncBodyLock() {
