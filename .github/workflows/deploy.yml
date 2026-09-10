@@ -1,0 +1,33 @@
+name: Deploy to production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Deploy via SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          sshpass -p "$SFTP_PASSWORD" sftp             -o StrictHostKeyChecking=accept-new             -P "$SFTP_PORT"             "$SFTP_USER@$SFTP_HOST" <<'SFTP_EOF'
+          cd inflect_studio
+          put index.php
+          put bio.php
+          put kontakt.php
+          put projekty.php
+          put -r admin
+          put -r assets
+          bye
+          SFTP_EOF
