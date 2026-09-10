@@ -1582,13 +1582,23 @@ if (!$projects) {
 
         /* Continuous services view */
         .service-continuation {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns:
+                minmax(300px, 0.9fr)
+                minmax(0, 1.1fr);
+            gap: clamp(70px, 10vw, 180px);
+            width: 100%;
             margin-top: clamp(110px, 14vh, 190px);
             padding-top: clamp(72px, 9vh, 120px);
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .service-continuation__header {
-            margin-bottom: clamp(48px, 6vh, 82px);
+            position: sticky;
+            top: calc(var(--header-height) + 70px);
+            align-self: start;
+            margin-bottom: 0;
         }
 
         .service-continuation__header .service-panel__title {
@@ -1605,12 +1615,15 @@ if (!$projects) {
 
         @media (max-width: 820px) {
             .service-continuation {
+                grid-template-columns: 1fr;
+                gap: 42px;
                 margin-top: 88px;
                 padding-top: 64px;
             }
 
             .service-continuation__header {
-                margin-bottom: 42px;
+                position: static;
+                margin-bottom: 0;
             }
         }
 </style>
@@ -5067,24 +5080,28 @@ body:not(.hero-pillars-ready) .hero-hover-image {
                 })
                 .join("");
 
-            serviceList.innerHTML =
-                renderSteps(firstService) +
-                order.slice(1).map((key) => {
-                    const service = services[key];
+            serviceList.innerHTML = renderSteps(firstService);
 
-                    return `
-                        <section class="service-continuation" data-service-section="${key}">
-                            <header class="service-continuation__header">
-                                <div class="service-panel__eyebrow">${service.eyebrow}</div>
-                                <h2 class="service-panel__title">${service.title}</h2>
-                                <p class="service-panel__lead">${service.lead}</p>
-                            </header>
-                            <div class="service-continuation__list">
-                                ${renderSteps(service)}
-                            </div>
-                        </section>
-                    `;
-                }).join("");
+            const inner = servicePanel.querySelector(".service-panel__inner");
+            inner.querySelectorAll(".service-continuation").forEach((section) => section.remove());
+
+            order.slice(1).forEach((key) => {
+                const service = services[key];
+                const section = document.createElement("section");
+                section.className = "service-continuation";
+                section.dataset.serviceSection = key;
+                section.innerHTML = `
+                    <header class="service-continuation__header">
+                        <div class="service-panel__eyebrow">${service.eyebrow}</div>
+                        <h2 class="service-panel__title">${service.title}</h2>
+                        <p class="service-panel__lead">${service.lead}</p>
+                    </header>
+                    <div class="service-continuation__list">
+                        ${renderSteps(service)}
+                    </div>
+                `;
+                inner.appendChild(section);
+            });
         }
 
         function syncBodyLock() {
