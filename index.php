@@ -4510,6 +4510,12 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 }
 </style>
 
+<style id="inflect-service-cta-shared">
+.service-panel__end-cta{grid-column:1/-1;width:100%;margin-top:clamp(90px,12vw,180px);padding-bottom:20px}
+.service-panel__end-cta .panel-end-cta__button{color:var(--sf-fg);border-top-color:color-mix(in srgb,var(--sf-fg) 24%,transparent);transition:color 360ms cubic-bezier(.22,1,.36,1),border-color 360ms cubic-bezier(.22,1,.36,1)}
+.service-panel__end-cta .panel-end-cta__eyebrow{color:var(--sf-muted);transition:color 360ms cubic-bezier(.22,1,.36,1)}
+.nav-arrow{font-family:inherit!important;font-style:normal;font-weight:inherit;text-rendering:auto}
+</style>
 </head>
 
 <body>
@@ -4619,7 +4625,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         <div class="panel-end-cta bio-panel__end-cta">
             <button class="panel-end-cta__button js-open-contact" type="button">
                 <span class="panel-end-cta__eyebrow">Masz projekt?</span>
-                <span class="panel-end-cta__title">Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span></span>
+                <span class="panel-end-cta__title">Porozmawiajmy <span class="nav-arrow" aria-hidden="true">↗</span></span>
             </button>
         </div>
 </section>
@@ -4673,7 +4679,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 
             <button class="panel-end-cta__button projects-panel__cta js-open-contact" type="button">
                 <span class="panel-end-cta__eyebrow">Masz projekt?</span>
-                <span class="panel-end-cta__title">Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span></span>
+                <span class="panel-end-cta__title">Porozmawiajmy <span class="nav-arrow" aria-hidden="true">↗</span></span>
             </button>
         </div>
     </section>
@@ -4816,7 +4822,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 
                 <button class="service-panel__cta service-panel__cta--desktop" type="button">
                     <span>Masz projekt?</span>
-                    <strong>Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span></strong>
+                    <strong>Porozmawiajmy <span class="nav-arrow" aria-hidden="true">↗</span></strong>
                 </button>
             </div>
 
@@ -4828,7 +4834,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 
             <button class="service-panel__cta service-panel__cta--mobile" type="button">
                 <span>Masz projekt?</span>
-                <strong>Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span></strong>
+                <strong>Porozmawiajmy <span class="nav-arrow" aria-hidden="true">↗</span></strong>
             </button>
         </div>
     </section>
@@ -5303,17 +5309,16 @@ body:not(.hero-pillars-ready) .hero-hover-image {
             const oldMobileCta = inner.querySelector(".service-panel__cta--mobile");
             if (oldMobileCta) oldMobileCta.style.display = "none";
 
-            inner.querySelectorAll(".service-end-cta").forEach((cta) => cta.remove());
-            const endCta = document.createElement("section");
-            endCta.className = "service-end-cta";
+            inner.querySelectorAll(".service-end-cta, .service-panel__end-cta").forEach((cta) => cta.remove());
+            const endCta = document.createElement("div");
+            endCta.className = "panel-end-cta service-panel__end-cta";
             endCta.innerHTML = `
-                <div class="service-end-cta__eyebrow">Masz projekt?</div>
-                <h2 class="service-end-cta__title">Opowiedz nam<br>o swoim projekcie.</h2>
-                <button class="service-end-cta__button" type="button">
-                    Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span>
+                <button class="panel-end-cta__button" type="button">
+                    <span class="panel-end-cta__eyebrow">Masz projekt?</span>
+                    <span class="panel-end-cta__title">Porozmawiajmy <span class="nav-arrow" aria-hidden="true">↗</span></span>
                 </button>
             `;
-            endCta.querySelector(".service-end-cta__button").addEventListener("click", openContact);
+            endCta.querySelector(".panel-end-cta__button").addEventListener("click", openContact);
             inner.appendChild(endCta);
 
             const sections = [...inner.querySelectorAll("[data-service-section]")];
