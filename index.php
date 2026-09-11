@@ -4403,6 +4403,113 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 }
 </style>
 
+
+<style id="inflect-service-flow-v2">
+.service-panel{
+  --sf-bg:#111111;
+  --sf-fg:#ffffff;
+  --sf-muted:rgba(255,255,255,.62);
+  background-color:var(--sf-bg);
+  color:var(--sf-fg);
+  transition:background-color 360ms cubic-bezier(.22,1,.36,1),color 360ms cubic-bezier(.22,1,.36,1),opacity 420ms ease,transform 700ms cubic-bezier(.22,1,.36,1);
+}
+.service-panel.is-inverted{
+  --sf-bg:#f2f0ea;
+  --sf-fg:#111111;
+  --sf-muted:rgba(17,17,17,.62);
+}
+.service-panel .service-panel__eyebrow,
+.service-panel .service-panel__lead,
+.service-panel .service-step__number,
+.service-panel .service-step__tagline,
+.service-panel .service-step__description{
+  color:var(--sf-muted);
+  transition:color 360ms cubic-bezier(.22,1,.36,1);
+}
+.service-panel .service-panel__title,
+.service-panel .service-step__title,
+.service-panel .service-panel__cta{
+  color:var(--sf-fg);
+  transition:color 360ms cubic-bezier(.22,1,.36,1);
+}
+.service-panel .service-step{
+  border-color:color-mix(in srgb,var(--sf-fg) 20%,transparent);
+  transition:opacity 480ms ease,transform 650ms cubic-bezier(.22,1,.36,1),background-color 260ms ease,color 260ms ease,border-color 260ms ease;
+}
+.service-panel .service-step:last-child{border-bottom-color:color-mix(in srgb,var(--sf-fg) 20%,transparent);}
+@media (hover:hover) and (pointer:fine){
+  .service-panel .service-step:hover{
+    background:var(--sf-fg);
+    color:var(--sf-bg);
+    border-color:var(--sf-fg);
+  }
+  .service-panel .service-step:hover .service-step__title{color:var(--sf-bg);}
+  .service-panel .service-step:hover .service-step__number,
+  .service-panel .service-step:hover .service-step__tagline,
+  .service-panel .service-step:hover .service-step__description{
+    color:color-mix(in srgb,var(--sf-bg) 68%,transparent);
+  }
+}
+.service-panel__section,
+.service-continuation{
+  position:relative;
+  min-height:100svh;
+}
+.service-panel__section + .service-continuation,
+.service-continuation + .service-continuation{
+  border-top:0!important;
+}
+@media (min-width:821px){
+  .service-panel__section>.service-panel__intro,
+  .service-continuation__header{
+    position:sticky!important;
+    top:calc(var(--header-height) + var(--space-6))!important;
+    align-self:start;
+  }
+}
+.service-end-cta{
+  grid-column:1/-1;
+  min-height:72svh;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-items:flex-start;
+  padding:clamp(90px,12vh,150px) 0 0;
+  margin-top:clamp(80px,10vh,130px);
+}
+.service-end-cta__eyebrow{
+  margin-bottom:18px;
+  color:var(--sf-muted);
+  font-size:13px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.service-end-cta__title{
+  max-width:1100px;
+  font-size:clamp(48px,6.8vw,110px);
+  font-weight:600;
+  line-height:.92;
+  letter-spacing:-.065em;
+}
+.service-end-cta__button{
+  margin-top:clamp(36px,5vh,64px);
+  border:0;
+  padding:0;
+  background:transparent;
+  color:var(--sf-fg);
+  cursor:pointer;
+  font-size:clamp(24px,2.4vw,42px);
+  font-weight:500;
+  letter-spacing:-.04em;
+  transition:color 360ms cubic-bezier(.22,1,.36,1),transform 320ms cubic-bezier(.22,1,.36,1);
+}
+.service-end-cta__button:hover{transform:translateX(8px);}
+@media(max-width:820px){
+  .service-end-cta{min-height:55svh;padding-top:72px;margin-top:72px;}
+  .service-end-cta__title{font-size:clamp(46px,13vw,72px);}
+}
+</style>
+
 </head>
 
 <body>
@@ -5193,19 +5300,35 @@ body:not(.hero-pillars-ready) .hero-hover-image {
                 inner.appendChild(section);
             });
 
-            const endCta = inner.querySelector(".service-panel__cta--mobile");
-            if (endCta) inner.appendChild(endCta);
+            const oldMobileCta = inner.querySelector(".service-panel__cta--mobile");
+            if (oldMobileCta) oldMobileCta.style.display = "none";
+
+            inner.querySelectorAll(".service-end-cta").forEach((cta) => cta.remove());
+            const endCta = document.createElement("section");
+            endCta.className = "service-end-cta";
+            endCta.innerHTML = `
+                <div class="service-end-cta__eyebrow">Masz projekt?</div>
+                <h2 class="service-end-cta__title">Opowiedz nam<br>o swoim projekcie.</h2>
+                <button class="service-end-cta__button" type="button">
+                    Porozmawiajmy <span class="nav-arrow" aria-hidden="true"></span>
+                </button>
+            `;
+            endCta.querySelector(".service-end-cta__button").addEventListener("click", openContact);
+            inner.appendChild(endCta);
 
             const sections = [...inner.querySelectorAll("[data-service-section]")];
+            let themeFrame = null;
             const updateServiceTheme = () => {
-                const trigger = servicePanel.scrollTop + servicePanel.clientHeight * 0.42;
-                let activeIndex = 0;
-
-                sections.forEach((section, index) => {
-                    if (section.offsetTop <= trigger) activeIndex = index;
+                if (themeFrame) return;
+                themeFrame = requestAnimationFrame(() => {
+                    const trigger = servicePanel.scrollTop + servicePanel.clientHeight * 0.36;
+                    let activeIndex = 0;
+                    sections.forEach((section, index) => {
+                        if (section.offsetTop <= trigger) activeIndex = index;
+                    });
+                    servicePanel.classList.toggle("is-inverted", activeIndex === 1);
+                    themeFrame = null;
                 });
-
-                servicePanel.classList.toggle("is-inverted", activeIndex === 1);
             };
 
             servicePanel.onscroll = updateServiceTheme;
