@@ -1413,8 +1413,8 @@ if (!$projects) {
         .topbar { display:flex; justify-content:space-between; align-items:center; }
         .topbar__studio { display:flex; align-items:center; justify-content:flex-start; pointer-events:auto; }
         .topbar__nav { display:flex; align-items:center; justify-content:flex-end; gap:clamp(16px,2vw,34px); pointer-events:auto; }
-        .topbar__bio,.topbar__projects,.topbar__contact { border:0; background:transparent; cursor:pointer; font-size:var(--type-label); font-weight:500; line-height:1; letter-spacing:var(--tracking-label); text-transform:uppercase; }
-        .topbar__bio-label,.topbar__projects-label,.topbar__contact-label { display:inline-block; min-width:0; text-align:right; }
+        .topbar__bio,.topbar__areas,.topbar__projects,.topbar__contact { border:0; background:transparent; cursor:pointer; font-size:var(--type-label); font-weight:500; line-height:1; letter-spacing:var(--tracking-label); text-transform:uppercase; }
+        .topbar__bio-label,.topbar__areas-label,.topbar__projects-label,.topbar__contact-label { display:inline-block; min-width:0; text-align:right; }
         .projects-panel { position:fixed; inset:0; z-index:895; width:100%; height:100svh; overflow-y:auto; overflow-x:hidden; background:var(--background); transform:translateY(-100%); visibility:hidden; transition:transform 700ms cubic-bezier(.22,1,.36,1),visibility 0s linear 700ms; will-change:transform; }
         .projects-panel.is-open { transform:translateY(0); visibility:visible; transition:transform 700ms cubic-bezier(.22,1,.36,1),visibility 0s; }
         .projects-panel__canvas { position:relative; min-height:7200px; padding-top:calc(var(--header-height) + 72px); padding-bottom:140px; }
@@ -4516,6 +4516,10 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 .service-panel__end-cta .panel-end-cta__eyebrow{color:var(--sf-muted);transition:color 360ms cubic-bezier(.22,1,.36,1)}
 .nav-arrow{font-family:inherit!important;font-style:normal;font-weight:inherit;text-rendering:auto}
 </style>
+<style id="inflect-areas-nav">
+.topbar__areas{border:0;background:transparent;cursor:pointer;font-size:var(--type-label);font-weight:500;line-height:1;letter-spacing:var(--tracking-label);text-transform:uppercase;pointer-events:auto}
+.topbar__areas-label{display:inline-block;min-width:0;text-align:right}
+</style>
 </head>
 
 <body>
@@ -4532,6 +4536,9 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         <nav class="topbar__nav" aria-label="Główna nawigacja">
             <button class="topbar__bio" type="button" aria-expanded="false" aria-controls="bio-panel">
                 <span class="topbar__bio-label">[ B I O ]</span>
+            </button>
+            <button class="topbar__areas" type="button" aria-expanded="false" aria-controls="service-panel">
+                <span class="topbar__areas-label">[ O B S Z A R Y ]</span>
             </button>
             <button class="topbar__projects" type="button" aria-expanded="false" aria-controls="projects-panel">
                 <span class="topbar__projects-label">[ P R O J E K T Y ]</span>
@@ -5058,6 +5065,9 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         const bioButtonLabel = document.querySelector(".topbar__bio-label");
         const bioPanel = document.querySelector(".bio-panel");
 
+        const areasButton = document.querySelector(".topbar__areas");
+        const areasButtonLabel = document.querySelector(".topbar__areas-label");
+
         const projectsButton = document.querySelector(".topbar__projects");
         const projectsButtonLabel = document.querySelector(".topbar__projects-label");
         const projectsPanel = document.querySelector(".projects-panel");
@@ -5510,6 +5520,9 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         });
 
         bioButton.addEventListener("click", openBio);
+        areasButton.addEventListener("click", () => {
+            openService("direction", pillarForService("direction"));
+        });
         projectsButton.addEventListener("click", openProjects);
         contactButton.addEventListener("click", openContact);
 
