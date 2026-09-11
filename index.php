@@ -1580,21 +1580,7 @@ if (!$projects) {
 
 
         /* Continuous services view */
-        .service-continuation {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns:
-                minmax(300px, 0.9fr)
-                minmax(0, 1.1fr);
-            gap: clamp(70px, 10vw, 180px);
-            width: 100%;
-            margin-top: clamp(110px, 14vh, 190px);
-            padding-top: clamp(72px, 9vh, 120px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
         .service-continuation__header {
-            position: static;
             align-self: start;
             margin-bottom: 0;
         }
@@ -1612,22 +1598,81 @@ if (!$projects) {
         }
 
         @media (max-width: 820px) {
-            .service-continuation {
-                grid-template-columns: 1fr;
-                gap: 42px;
-                margin-top: 88px;
-                padding-top: 64px;
-            }
-
             .service-continuation__header {
                 position: static;
                 margin-bottom: 0;
             }
         }
 
-        /* Sticky pillar labels + single CTA at the end of the full services flow */
+        /* Continuous service sections */
+        .service-panel {
+            --service-bg: #111111;
+            --service-fg: #ffffff;
+            --service-muted: rgba(255, 255, 255, 0.62);
+            background: var(--service-bg);
+            color: var(--service-fg);
+            transition:
+                background-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 420ms ease,
+                transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 700ms;
+        }
+
+        .service-panel.is-open {
+            transition:
+                background-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 420ms ease,
+                transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s;
+        }
+
+        .service-panel.is-inverted {
+            --service-bg: #f2f0ea;
+            --service-fg: #111111;
+            --service-muted: rgba(17, 17, 17, 0.62);
+        }
+
+        .service-panel .service-panel__eyebrow,
+        .service-panel .service-step__number,
+        .service-panel .service-panel__lead,
+        .service-panel .service-step__description,
+        .service-panel .service-step__tagline {
+            color: var(--service-muted);
+            transition: color 700ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .service-panel .service-step {
+            border-color: color-mix(in srgb, var(--service-fg) 20%, transparent);
+            transition:
+                border-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 480ms ease,
+                transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .service-panel__section,
+        .service-continuation {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
+            gap: clamp(70px, 10vw, 180px);
+            width: 100%;
+            min-height: 100svh;
+            align-items: start;
+            padding-block: clamp(24px, 4vh, 56px);
+        }
+
+        .service-panel__section + .service-continuation,
+        .service-continuation + .service-continuation {
+            margin-top: clamp(72px, 10vh, 130px);
+            padding-top: clamp(72px, 9vh, 120px);
+            border-top: 0;
+        }
+
         @media (min-width: 821px) {
-            .service-panel__intro,
+            .service-panel__section > .service-panel__intro,
             .service-continuation__header {
                 position: sticky;
                 top: calc(var(--header-height) + var(--space-6));
@@ -1642,6 +1687,15 @@ if (!$projects) {
                 grid-column: 1 / -1;
                 width: 100%;
                 margin-top: clamp(90px, 12vh, 160px);
+            }
+        }
+
+        @media (max-width: 820px) {
+            .service-panel__section,
+            .service-continuation {
+                grid-template-columns: 1fr;
+                gap: 42px;
+                min-height: auto;
             }
         }
 </style>
@@ -5101,13 +5155,31 @@ body:not(.hero-pillars-ready) .hero-hover-image {
             serviceList.innerHTML = renderSteps(firstService);
 
             const inner = servicePanel.querySelector(".service-panel__inner");
-            inner.querySelectorAll(".service-continuation").forEach((section) => section.remove());
+            inner.querySelectorAll(".service-continuation, .service-panel__section").forEach((section) => {
+                if (section.classList.contains("service-panel__section")) {
+                    const intro = section.querySelector(".service-panel__intro");
+                    const list = section.querySelector(".service-panel__list");
+                    if (intro) inner.insertBefore(intro, section);
+                    if (list) inner.insertBefore(list, section);
+                }
+                section.remove();
+            });
 
-            order.slice(1).forEach((key) => {
+            const intro = inner.querySelector(".service-panel__intro");
+            const firstList = inner.querySelector(".service-panel__list");
+            const firstSection = document.createElement("section");
+            firstSection.className = "service-panel__section";
+            firstSection.dataset.serviceSection = serviceKey;
+            inner.insertBefore(firstSection, intro);
+            firstSection.appendChild(intro);
+            firstSection.appendChild(firstList);
+
+            order.slice(1).forEach((key, index) => {
                 const service = services[key];
                 const section = document.createElement("section");
                 section.className = "service-continuation";
                 section.dataset.serviceSection = key;
+                section.dataset.sequence = String(index + 2);
                 section.innerHTML = `
                     <header class="service-continuation__header">
                         <div class="service-panel__eyebrow">${service.eyebrow}</div>
@@ -5123,6 +5195,21 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 
             const endCta = inner.querySelector(".service-panel__cta--mobile");
             if (endCta) inner.appendChild(endCta);
+
+            const sections = [...inner.querySelectorAll("[data-service-section]")];
+            const updateServiceTheme = () => {
+                const trigger = servicePanel.scrollTop + servicePanel.clientHeight * 0.42;
+                let activeIndex = 0;
+
+                sections.forEach((section, index) => {
+                    if (section.offsetTop <= trigger) activeIndex = index;
+                });
+
+                servicePanel.classList.toggle("is-inverted", activeIndex === 1);
+            };
+
+            servicePanel.onscroll = updateServiceTheme;
+            updateServiceTheme();
         }
 
         function syncBodyLock() {
@@ -5160,7 +5247,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         }
 
         function closeService() {
-            servicePanel.classList.remove("is-open");
+            servicePanel.classList.remove("is-open", "is-inverted");
             servicePanel.setAttribute("aria-hidden", "true");
             pillars.forEach((pillar) => pillar.classList.remove("is-active"));
             syncBodyLock();
