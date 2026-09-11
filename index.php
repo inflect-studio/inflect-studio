@@ -4520,6 +4520,80 @@ body:not(.hero-pillars-ready) .hero-hover-image {
 .topbar__areas{border:0;background:transparent;cursor:pointer;font-size:var(--type-label);font-weight:500;line-height:1;letter-spacing:var(--tracking-label);text-transform:uppercase;pointer-events:auto}
 .topbar__areas-label{display:inline-block;min-width:0;text-align:right}
 </style>
+<style id="inflect-services-polish-v3">
+/* Keep only the font glyph arrow. */
+.nav-arrow::before,
+.nav-arrow::after{content:none!important;display:none!important}
+.nav-arrow{
+  position:static!important;
+  width:auto!important;
+  height:auto!important;
+  transform:none;
+  vertical-align:baseline;
+}
+
+/* Service pillar title rotates between brand pillar and service name. */
+.service-panel__title{
+  overflow:hidden;
+}
+.service-title-switch{
+  position:relative;
+  display:block;
+  height:.94em;
+  overflow:hidden;
+}
+.service-title-switch__track{
+  display:flex;
+  flex-direction:column;
+  height:1.88em;
+  transform:translateY(0);
+  animation:serviceTitleCycle 6s cubic-bezier(.22,1,.36,1) infinite;
+  will-change:transform;
+}
+.service-title-switch__text{
+  display:flex;
+  align-items:center;
+  height:.94em;
+  white-space:nowrap;
+}
+@keyframes serviceTitleCycle{
+  0%,38%{transform:translateY(0)}
+  46%,88%{transform:translateY(-.94em)}
+  96%,100%{transform:translateY(0)}
+}
+
+/* Faster theme response - no loading-like lag. */
+.service-panel{
+  transition:background-color 220ms cubic-bezier(.22,1,.36,1),color 220ms cubic-bezier(.22,1,.36,1),opacity 420ms ease,transform 700ms cubic-bezier(.22,1,.36,1)!important;
+}
+.service-panel .service-panel__eyebrow,
+.service-panel .service-panel__lead,
+.service-panel .service-step__number,
+.service-panel .service-step__tagline,
+.service-panel .service-step__description,
+.service-panel .service-panel__title,
+.service-panel .panel-end-cta__button,
+.service-panel .panel-end-cta__eyebrow{
+  transition-duration:220ms!important;
+}
+
+/* All pillar headings use exactly the same scale on mobile. */
+@media(max-width:820px){
+  #service-title,
+  .service-continuation__header .service-panel__title{
+    font-size:clamp(52px,16vw,82px)!important;
+    line-height:.9!important;
+    letter-spacing:-.065em!important;
+  }
+  .service-title-switch,
+  .service-title-switch__text{
+    height:.94em;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .service-title-switch__track{animation:none!important}
+}
+</style>
 </head>
 
 <body>
@@ -5173,6 +5247,25 @@ body:not(.hero-pillars-ready) .hero-hover-image {
         };
 
 
+        const serviceAltTitles = {
+            direction: "Strategia",
+            character: "Design",
+            presence: "Social Media"
+        };
+
+        function serviceTitleMarkup(serviceKey) {
+            const service = services[serviceKey];
+            const alt = serviceAltTitles[serviceKey] || service.title;
+            return `
+                <span class="service-title-switch" aria-label="${service.title} / ${alt}">
+                    <span class="service-title-switch__track" aria-hidden="true">
+                        <span class="service-title-switch__text">${service.title}</span>
+                        <span class="service-title-switch__text">${alt}</span>
+                    </span>
+                </span>
+            `;
+        }
+
         const routeByService = {
             direction: "/strategia",
             character: "/design",
@@ -5255,7 +5348,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
             }
 
             serviceEyebrow.textContent = firstService.eyebrow;
-            serviceTitle.textContent = firstService.title;
+            serviceTitle.innerHTML = serviceTitleMarkup(serviceKey);
             serviceLead.textContent = firstService.lead;
 
             const renderSteps = (service) => service.steps
@@ -5306,7 +5399,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
                 section.innerHTML = `
                     <header class="service-continuation__header">
                         <div class="service-panel__eyebrow">${service.eyebrow}</div>
-                        <h2 class="service-panel__title">${service.title}</h2>
+                        <h2 class="service-panel__title">${serviceTitleMarkup(key)}</h2>
                         <p class="service-panel__lead">${service.lead}</p>
                     </header>
                     <div class="service-continuation__list">
@@ -5336,7 +5429,7 @@ body:not(.hero-pillars-ready) .hero-hover-image {
             const updateServiceTheme = () => {
                 if (themeFrame) return;
                 themeFrame = requestAnimationFrame(() => {
-                    const trigger = servicePanel.scrollTop + servicePanel.clientHeight * 0.36;
+                    const trigger = servicePanel.scrollTop + servicePanel.clientHeight * 0.72;
                     let activeIndex = 0;
                     sections.forEach((section, index) => {
                         if (section.offsetTop <= trigger) activeIndex = index;
