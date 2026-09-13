@@ -30,7 +30,10 @@ jobs:
           put bio.php
           put kontakt.php
           put projekty.php
-          mkdir projekty-demo\n          cd projekty-demo\n          put projekty-demo/index.php\n          cd ..
+          -mkdir projekty-demo
+          cd projekty-demo
+          put projekty-demo/index.php
+          cd ..
           put -r admin
           put -r assets
           bye
