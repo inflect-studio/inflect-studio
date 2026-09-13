@@ -39,7 +39,12 @@ img,video{display:block;width:100%;height:100%;object-fit:cover}.view{display:no
 .caption{position:fixed;z-index:90;left:16px;bottom:max(16px,env(safe-area-inset-bottom));mix-blend-mode:difference;color:white;pointer-events:none}.caption b{font-size:9px;letter-spacing:.15em;text-transform:uppercase}.caption span{display:block;margin-top:4px;font-size:9px;opacity:.48;letter-spacing:.08em}
 @media(min-width:760px){.m-natural{columns:3;column-gap:12px}.m-natural .m-item{margin-bottom:12px}.m-kinetic{grid-template-columns:repeat(3,1fr);gap:12px}.masonry-subnav{left:26px}.nav{padding-left:26px;padding-right:26px}.switch{flex-direction:row;gap:18px}.masonry{padding-left:22px;padding-right:22px}.masonry-grid{grid-template-columns:repeat(3,1fr);gap:12px}.m-col{gap:12px}.m-col:nth-child(2){padding-top:20vh}.m-col:nth-child(3){padding-top:8vh}.chaos-grid{row-gap:20vh}.chaos-item:nth-child(8n+1){grid-column:2/11;aspect-ratio:16/10}.chaos-item:nth-child(8n+2){grid-column:2/6}.chaos-item:nth-child(8n+3){grid-column:8/12}.chaos-item:nth-child(8n+4){grid-column:1/9}.chaos-item:nth-child(8n+5){grid-column:7/12}.chaos-item:nth-child(8n+6){grid-column:2/6}.chaos-item:nth-child(8n+7){grid-column:5/11}.chaos-item:nth-child(8n){grid-column:3/10;aspect-ratio:4/5}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
-</style></head><body>
+</style><style id="masonry-video-fix">
+.masonry video{display:block;width:100%;height:auto;background:#141414}
+.masonry-subnav{pointer-events:auto}
+.masonry-subnav button{pointer-events:auto;cursor:pointer}
+</style>
+</head><body>
 <nav class="nav"><a class="brand" href="../index.php">Inflect Studio</a><div class="switch"><button class="active" data-view="masonry">Masonry Study</button></div></nav>
 <div class="caption"><b id="ct">Kinetic Masonry</b><span id="cc">Selected fragments / scroll</span></div>
 <main>
@@ -68,7 +73,29 @@ img,video{display:block;width:100%;height:100%;object-fit:cover}.view{display:no
 <script>
 const $$=(s,p=document)=>[...p.querySelectorAll(s)];
 const labels={masonry:['Kinetic Masonry','Selected fragments / scroll'],stream:['Infinite Visual Stream','Drag the archive'],chaos:['Editorial Chaos','Selected fragments / scroll']};
-function hydrate(root){$$('video[data-src]',root).forEach(v=>{if(!v.src){v.src=v.dataset.src;v.play().catch(()=>{})}})}
+function hydrate(root){
+  if(!root)return;
+  $('video[data-src]',root).forEach(v=>{
+    if(!v.src){
+      v.autoplay=true;
+      v.muted=true;
+      v.loop=true;
+      v.playsInline=true;
+      v.preload='metadata';
+      v.src=v.dataset.src;
+      v.addEventListener('loadedmetadata',()=>{
+        if(v.videoWidth&&v.videoHeight){
+          v.style.aspectRatio=v.videoWidth+' / '+v.videoHeight;
+          v.style.height='auto';
+        }
+        v.play().catch(()=>{});
+      },{once:true});
+      v.load();
+    }else{
+      v.play().catch(()=>{});
+    }
+  });
+}
 function show(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('.switch button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));ct.textContent=labels[id][0];cc.textContent=labels[id][1];scrollTo(0,0);hydrate(document.querySelector('#'+id));}
 $('.switch button').forEach(b=>b.onclick=()=>show(b.dataset.view));hydrate(masonry);
 $('[data-masonry]').forEach(b=>b.onclick=()=>{
