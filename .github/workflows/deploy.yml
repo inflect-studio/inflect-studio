@@ -30,6 +30,7 @@ jobs:
           put bio.php
           put kontakt.php
           put projekty.php
+          put -r projekty-demo
           put -r admin
           put -r assets
           bye
