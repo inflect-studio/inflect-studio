@@ -6,63 +6,321 @@ if (is_file($manifest)) {
   if (is_array($decoded)) $projects = $decoded;
 }
 $media = [];
-foreach ($projects as $p) {
+foreach ($projects as $i => $p) {
   $file = isset($p['file']) ? basename((string)$p['file']) : '';
   if (!$file) continue;
   $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-  $media[] = ['file'=>$file,'video'=>$ext === 'mp4'];
+  $media[] = [
+    'file' => $file,
+    'video' => $ext === 'mp4',
+    'index' => $i + 1,
+    'title' => 'Project ' . str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT)
+  ];
 }
 ?>
 <!doctype html>
 <html lang="pl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0b">
 <title>Projekty Demo - Inflect Studio</title>
 <style>
-:root{--bg:#0b0b0b;--fg:#f4f2ec;--muted:#8f8f8b;--line:rgba(255,255,255,.16)}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Arial,Helvetica,sans-serif}body{overflow-x:hidden}
-header{position:fixed;z-index:50;top:0;left:0;width:100%;display:flex;justify-content:space-between;padding:22px 28px;mix-blend-mode:difference;color:#fff;font-size:12px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
-header a{color:inherit;text-decoration:none;pointer-events:auto}.switcher{display:flex;gap:18px;pointer-events:auto}.switcher button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:uppercase;opacity:.45}.switcher button.active{opacity:1}
-main{min-height:100vh}.view{display:none;min-height:100vh}.view.active{display:block}
-.intro{position:fixed;z-index:10;left:28px;bottom:25px;max-width:420px;pointer-events:none}.intro h1{margin:0;font-size:clamp(42px,6vw,96px);line-height:.88;letter-spacing:-.065em}.intro p{margin:14px 0 0;color:#aaa;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
-/* 01 depth */
-.depth{height:700vh;position:relative}.depth-stage{position:sticky;top:0;height:100vh;overflow:hidden;perspective:1100px}.depth-world{position:absolute;inset:0;transform-style:preserve-3d}.depth-card{position:absolute;left:50%;top:50%;width:min(42vw,680px);aspect-ratio:4/3;overflow:hidden;background:#161616;box-shadow:0 30px 90px rgba(0,0,0,.45);will-change:transform,opacity}.depth-card img,.depth-card video{width:100%;height:100%;object-fit:cover;display:block}
-/* 02 rail */
-.rail{height:100vh;display:flex;align-items:center;overflow:hidden;cursor:grab}.rail:active{cursor:grabbing}.rail-track{display:flex;align-items:center;gap:clamp(18px,2vw,34px);padding:0 16vw;will-change:transform}.rail-item{flex:0 0 auto;width:clamp(250px,32vw,570px);aspect-ratio:4/3;overflow:hidden;background:#161616;transform-origin:center;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .5s}.rail-item:nth-child(3n+2){width:clamp(210px,25vw,440px);aspect-ratio:3/4}.rail-item img,.rail-item video{width:100%;height:100%;object-fit:cover;display:block}
-/* 03 field */
-.field{height:100vh;overflow:hidden;position:relative;cursor:move}.field-world{position:absolute;left:50%;top:50%;width:2200px;height:1500px;transform:translate(-50%,-50%);will-change:transform}.field-item{position:absolute;width:300px;overflow:hidden;background:#161616;box-shadow:0 18px 70px rgba(0,0,0,.3);transition:transform .45s cubic-bezier(.22,1,.36,1),z-index 0s}.field-item:hover{transform:scale(1.08);z-index:5}.field-item img,.field-item video{width:100%;height:auto;display:block}.field-label{position:absolute;left:18px;top:18px;z-index:3;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#fff;mix-blend-mode:difference}
-@media(max-width:700px){header{padding:18px 16px;align-items:flex-start}.switcher{gap:8px;flex-direction:column;align-items:flex-end}.intro{left:16px;bottom:18px}.depth-card{width:72vw}.rail-track{padding:0 24vw}.rail-item{width:68vw}.field-world{transform:translate(-50%,-50%) scale(.7)}}
+:root{
+  --bg:#0b0b0b;
+  --fg:#f4f2ec;
+  --muted:rgba(244,242,236,.48);
+  --line:rgba(255,255,255,.14);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow-x:hidden}
+button{font:inherit}
+img,video{display:block;width:100%;height:100%;object-fit:cover}
+.demo-nav{
+  position:fixed;z-index:200;top:0;left:0;width:100%;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:max(16px,env(safe-area-inset-top)) 16px 0;
+  mix-blend-mode:difference;color:white;pointer-events:none
+}
+.demo-brand{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:inherit;pointer-events:auto}
+.demo-switch{display:flex;flex-direction:column;align-items:flex-end;gap:5px;pointer-events:auto}
+.demo-switch button{
+  border:0;background:none;color:inherit;padding:0;
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.38;cursor:pointer
+}
+.demo-switch button.active{opacity:1}
+.view{display:none}
+.view.active{display:block}
+
+/* 01 - FULLSCREEN STORIES */
+.stories{
+  background:#0b0b0b;
+  scroll-snap-type:y mandatory;
+}
+.story{
+  position:relative;height:100svh;overflow:hidden;scroll-snap-align:start;isolation:isolate
+}
+.story-media{position:absolute;inset:0;transform:scale(1.06);transition:transform 1.2s var(--ease)}
+.story.is-current .story-media{transform:scale(1)}
+.story:after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.04) 45%,rgba(0,0,0,.86) 100%)
+}
+.story-meta{
+  position:absolute;z-index:3;left:16px;right:16px;bottom:max(22px,env(safe-area-inset-bottom));
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px
+}
+.story-index{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}
+.story-title{margin:6px 0 0;font-size:clamp(44px,14vw,86px);line-height:.86;letter-spacing:-.07em;font-weight:600}
+.story-arrow{font-size:32px;line-height:1}
+.story-progress{
+  position:absolute;z-index:4;top:50%;right:10px;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:5px
+}
+.story-progress span{display:block;width:2px;height:16px;background:rgba(255,255,255,.22);transition:.3s var(--ease)}
+.story-progress span.active{height:38px;background:#fff}
+
+/* 02 - KINETIC STACK */
+.stack-view{min-height:100vh;background:#111;padding-top:12vh}
+.stack-wrap{padding:0 12px 22vh}
+.stack-card{
+  position:sticky;top:9vh;height:82svh;margin:0 0 10vh;border-radius:22px;overflow:hidden;background:#1a1a1a;
+  transform-origin:center top;box-shadow:0 20px 70px rgba(0,0,0,.36)
+}
+.stack-card:after{
+  content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.78));
+  pointer-events:none
+}
+.stack-card__meta{
+  position:absolute;z-index:3;left:16px;right:16px;bottom:16px;
+  display:flex;justify-content:space-between;align-items:flex-end
+}
+.stack-card__title{font-size:clamp(34px,10vw,62px);line-height:.9;letter-spacing:-.06em;margin:0}
+.stack-card__no{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+
+/* 03 - EDITORIAL INDEX */
+.index-view{min-height:100svh;background:#efede7;color:#0f0f0f;position:relative}
+.index-preview{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none
+}
+.index-preview:after{
+  content:"";position:absolute;inset:0;background:rgba(239,237,231,.58);backdrop-filter:saturate(.75)
+}
+.index-preview-media{
+  position:absolute;inset:0;opacity:0;transform:scale(1.06);
+  transition:opacity .45s ease,transform .8s var(--ease)
+}
+.index-preview-media.active{opacity:1;transform:scale(1)}
+.index-list{
+  position:relative;z-index:2;padding:28vh 14px 28vh
+}
+.index-row{
+  border-top:1px solid rgba(0,0,0,.18);
+  min-height:92px;display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:8px;
+  cursor:pointer;transition:opacity .25s ease
+}
+.index-row:last-child{border-bottom:1px solid rgba(0,0,0,.18)}
+.index-row__no{font-size:10px;letter-spacing:.12em;color:rgba(0,0,0,.46)}
+.index-row__title{
+  font-size:clamp(34px,10vw,72px);line-height:.88;letter-spacing:-.065em;font-weight:600;
+  transform:translateX(0);transition:transform .35s var(--ease)
+}
+.index-row__type{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.5)}
+.index-row.active .index-row__title{transform:translateX(10px)}
+.index-row:not(.active){opacity:.48}
+.index-label{
+  position:fixed;z-index:4;left:14px;bottom:max(18px,env(safe-area-inset-bottom));
+  font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(0,0,0,.55)
+}
+
+/* shared */
+.view-caption{
+  position:fixed;z-index:120;left:16px;top:max(74px,calc(env(safe-area-inset-top) + 58px));
+  color:white;mix-blend-mode:difference;pointer-events:none
+}
+.view-caption b{display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+.view-caption span{display:block;margin-top:5px;font-size:11px;opacity:.52}
+
+@media(min-width:760px){
+  .demo-nav{padding-left:26px;padding-right:26px}
+  .demo-switch{flex-direction:row;gap:18px}
+  .story-meta{left:28px;right:28px;bottom:28px}
+  .story-title{font-size:min(8vw,120px)}
+  .stack-wrap{max-width:1080px;margin:0 auto}
+  .stack-card{height:78vh;border-radius:28px}
+  .index-list{padding-left:28px;padding-right:28px}
+  .index-row{min-height:120px;grid-template-columns:60px 1fr 120px}
+  .index-label{left:28px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
-<header><a href="../index.php">INFLECT STUDIO</a><div class="switcher"><button data-view="depth" class="active">01 DEPTH</button><button data-view="rail">02 RAIL</button><button data-view="field">03 FIELD</button></div></header>
+
+<nav class="demo-nav">
+  <a class="demo-brand" href="../index.php">Inflect Studio</a>
+  <div class="demo-switch">
+    <button class="active" data-view="stories">01 Stories</button>
+    <button data-view="stack">02 Stack</button>
+    <button data-view="index">03 Index</button>
+  </div>
+</nav>
+
+<div class="view-caption">
+  <b id="caption-title">Fullscreen Stories</b>
+  <span id="caption-copy">Swipe / scroll to browse</span>
+</div>
+
 <main>
-<section id="depth" class="view active depth"><div class="depth-stage"><div class="depth-world">
-<?php foreach(array_slice($media,0,18) as $i=>$m): ?><figure class="depth-card" data-i="<?=$i?>"><?php if($m['video']):?><video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video><?php else:?><img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy"><?php endif;?></figure><?php endforeach;?>
-</div></div></section>
-<section id="rail" class="view rail"><div class="rail-track">
-<?php foreach(array_slice($media,0,24) as $i=>$m): ?><figure class="rail-item"><?php if($m['video']):?><video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video><?php else:?><img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy"><?php endif;?></figure><?php endforeach;?>
-</div></section>
-<section id="field" class="view field"><div class="field-world">
-<?php foreach(array_slice($media,0,20) as $i=>$m): ?><figure class="field-item" data-i="<?=$i?>"><span class="field-label"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><?php if($m['video']):?><video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video><?php else:?><img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy"><?php endif;?></figure><?php endforeach;?>
-</div></section>
+<section class="view active stories" id="stories">
+<?php foreach(array_slice($media,0,12) as $i=>$m): ?>
+  <article class="story" data-story="<?=$i?>">
+    <div class="story-media">
+      <?php if($m['video']): ?>
+        <video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video>
+      <?php else: ?>
+        <img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy">
+      <?php endif; ?>
+    </div>
+    <div class="story-meta">
+      <div>
+        <div class="story-index"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?> / <?=str_pad((string)min(12,count($media)),2,'0',STR_PAD_LEFT)?></div>
+        <h2 class="story-title"><?=htmlspecialchars($m['title'])?></h2>
+      </div>
+      <div class="story-arrow">↗</div>
+    </div>
+  </article>
+<?php endforeach; ?>
+  <div class="story-progress">
+  <?php foreach(array_slice($media,0,12) as $i=>$m): ?><span class="<?=$i===0?'active':''?>"></span><?php endforeach;?>
+  </div>
+</section>
+
+<section class="view stack-view" id="stack">
+  <div class="stack-wrap">
+  <?php foreach(array_slice($media,0,12) as $i=>$m): ?>
+    <article class="stack-card" data-stack="<?=$i?>">
+      <?php if($m['video']): ?>
+        <video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video>
+      <?php else: ?>
+        <img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy">
+      <?php endif; ?>
+      <div class="stack-card__meta">
+        <div>
+          <div class="stack-card__no">Case <?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></div>
+          <h2 class="stack-card__title"><?=htmlspecialchars($m['title'])?></h2>
+        </div>
+        <div class="story-arrow">↗</div>
+      </div>
+    </article>
+  <?php endforeach; ?>
+  </div>
+</section>
+
+<section class="view index-view" id="index">
+  <div class="index-preview">
+    <?php foreach(array_slice($media,0,16) as $i=>$m): ?>
+      <div class="index-preview-media <?=$i===0?'active':''?>" data-preview="<?=$i?>">
+        <?php if($m['video']): ?>
+          <video data-src="../assets/projects/<?=htmlspecialchars($m['file'])?>" muted loop playsinline preload="none"></video>
+        <?php else: ?>
+          <img src="../assets/projects/<?=htmlspecialchars($m['file'])?>" alt="" loading="lazy">
+        <?php endif; ?>
+      </div>
+    <?php endforeach; ?>
+  </div>
+  <div class="index-list">
+    <?php foreach(array_slice($media,0,16) as $i=>$m): ?>
+      <div class="index-row <?=$i===0?'active':''?>" data-row="<?=$i?>">
+        <span class="index-row__no"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span>
+        <span class="index-row__title"><?=htmlspecialchars($m['title'])?></span>
+        <span class="index-row__type"><?=$m['video']?'Motion':'Visual'?></span>
+      </div>
+    <?php endforeach; ?>
+  </div>
+  <div class="index-label">Selected work / Inflect Studio</div>
+</section>
 </main>
-<div class="intro"><h1 id="view-title">Depth<br>Archive</h1><p id="view-copy">Scroll-driven spatial gallery / 01</p></div>
+
 <script>
 const $$=(s,p=document)=>[...p.querySelectorAll(s)];
-function hydrate(root){$$('video[data-src]',root).forEach(v=>{if(!v.src){v.src=v.dataset.src;v.play().catch(()=>{})}})}
-const titles={depth:['Depth<br>Archive','Scroll-driven spatial gallery / 01'],rail:['Infinite<br>Rail','Velocity-driven horizontal archive / 02'],field:['Project<br>Field','Draggable infinite-style canvas / 03']};
-$$('.switcher button').forEach(b=>b.onclick=()=>{$$('.switcher button').forEach(x=>x.classList.toggle('active',x===b));$$('.view').forEach(v=>v.classList.toggle('active',v.id===b.dataset.view));document.querySelector('#view-title').innerHTML=titles[b.dataset.view][0];document.querySelector('#view-copy').textContent=titles[b.dataset.view][1];hydrate(document.querySelector('#'+b.dataset.view));});
-hydrate(document.querySelector('#depth'));
-// depth z-stack
-const depth=document.querySelector('#depth'),cards=$$('.depth-card');
-function depthRender(){if(!depth.classList.contains('active'))return;const max=depth.scrollHeight-innerHeight;const p=max?scrollY/max:0;const travel=p*(cards.length+2);cards.forEach((el,i)=>{const d=i-travel;const z=-d*430;const y=d*34;const x=Math.sin(i*1.71)*170;const rot=Math.sin(i*.83)*5;const scale=Math.max(.35,1+d*.018);el.style.transform=`translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateZ(${rot}deg) scale(${scale})`;el.style.opacity=d<-1.2||d>8?0:1;});}addEventListener('scroll',depthRender,{passive:true});depthRender();
-// rail drag + wheel
-const rail=document.querySelector('#rail'),track=document.querySelector('.rail-track');let rx=0,rv=0,drag=false,last=0;
-rail.addEventListener('wheel',e=>{if(rail.classList.contains('active')){e.preventDefault();rv-=e.deltaY*.55}},{passive:false});rail.onpointerdown=e=>{drag=true;last=e.clientX;rail.setPointerCapture(e.pointerId)};rail.onpointermove=e=>{if(drag){rv+=(e.clientX-last)*1.15;last=e.clientX}};rail.onpointerup=()=>drag=false;
-function railTick(){if(rail.classList.contains('active')){rx+=rv;rv*=.9;const min=-(track.scrollWidth-innerWidth+120);rx=Math.max(min,Math.min(0,rx));track.style.transform=`translate3d(${rx}px,0,0)`;const center=innerWidth/2;$$('.rail-item').forEach(el=>{const r=el.getBoundingClientRect(),d=Math.abs((r.left+r.width/2)-center)/innerWidth;el.style.transform=`scale(${1-Math.min(.22,d*.22)}) rotateY(${((r.left+r.width/2)-center)/innerWidth*8}deg)`;el.style.opacity=1-Math.min(.5,d*.45)})}requestAnimationFrame(railTick)}railTick();
-// field layout + inertial drag
-const field=document.querySelector('#field'),world=document.querySelector('.field-world'),fis=$$('.field-item');fis.forEach((el,i)=>{const col=i%5,row=Math.floor(i/5);el.style.left=(130+col*390+(row%2)*80)+'px';el.style.top=(100+row*340+(col%2)*55)+'px';el.style.width=(230+(i%3)*55)+'px'});
-let fx=0,fy=0,tx=0,ty=0,fd=false,lx=0,ly=0;field.onpointerdown=e=>{fd=true;lx=e.clientX;ly=e.clientY;field.setPointerCapture(e.pointerId)};field.onpointermove=e=>{if(fd){tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY}};field.onpointerup=()=>fd=false;field.addEventListener('wheel',e=>{tx-=e.deltaX*.45;ty-=e.deltaY*.45},{passive:true});function fieldTick(){fx+=(tx-fx)*.08;fy+=(ty-fy)*.08;world.style.transform=`translate(calc(-50% + ${fx}px),calc(-50% + ${fy}px))`;requestAnimationFrame(fieldTick)}fieldTick();
+const views={stories:['Fullscreen Stories','Swipe / scroll to browse'],stack:['Kinetic Stack','Layered sticky case studies'],index:['Editorial Index','Typography first / live preview']};
+
+function hydrate(root){
+  $$('video[data-src]',root).forEach(v=>{
+    if(!v.src){v.src=v.dataset.src;v.play().catch(()=>{})}
+  });
+}
+function switchView(id){
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id===id));
+  $$('.demo-switch button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  document.querySelector('#caption-title').textContent=views[id][0];
+  document.querySelector('#caption-copy').textContent=views[id][1];
+  document.body.style.overflowY = id==='stories' ? 'auto' : 'auto';
+  window.scrollTo(0,0);
+  hydrate(document.querySelector('#'+id));
+}
+$$('.demo-switch button').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+hydrate(document.querySelector('#stories'));
+
+// 01 stories
+const stories=$$('.story');
+const storyDots=$$('.story-progress span');
+const storyObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      stories.forEach(s=>s.classList.toggle('is-current',s===e.target));
+      const i=+e.target.dataset.story;
+      storyDots.forEach((d,n)=>d.classList.toggle('active',n===i));
+      const v=e.target.querySelector('video'); if(v)v.play().catch(()=>{});
+    }
+  });
+},{threshold:.62});
+stories.forEach(s=>storyObserver.observe(s));
+
+// 02 stack
+const stackCards=$$('.stack-card');
+function stackRender(){
+  if(!document.querySelector('#stack').classList.contains('active')) return;
+  const vh=innerHeight;
+  stackCards.forEach((card,i)=>{
+    const r=card.getBoundingClientRect();
+    const progress=Math.max(0,Math.min(1,(vh*.16-r.top)/(vh*.62)));
+    const scale=1-progress*.055;
+    const shade=progress*.28;
+    card.style.transform=`scale(${scale})`;
+    card.style.filter=`brightness(${1-shade})`;
+    card.style.zIndex=String(i+1);
+  });
+}
+addEventListener('scroll',stackRender,{passive:true});
+stackRender();
+
+// 03 editorial index
+const rows=$$('.index-row');
+const previews=$$('.index-preview-media');
+function setIndexActive(i){
+  rows.forEach((r,n)=>r.classList.toggle('active',n===i));
+  previews.forEach((p,n)=>{
+    p.classList.toggle('active',n===i);
+    const v=p.querySelector('video');
+    if(v && n===i) v.play().catch(()=>{});
+  });
+}
+rows.forEach((r,i)=>{
+  r.addEventListener('mouseenter',()=>setIndexActive(i));
+  r.addEventListener('click',()=>setIndexActive(i));
+});
+const rowObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) setIndexActive(+e.target.dataset.row);
+  });
+},{rootMargin:'-44% 0px -44% 0px',threshold:0});
+rows.forEach(r=>rowObserver.observe(r));
 </script>
-</body></html>
+</body>
+</html>
