@@ -106,20 +106,75 @@ h1{font-size:clamp(44px,12vw,74px);line-height:.88;letter-spacing:-.07em;margin:
 .empty{padding:28px 0;color:var(--muted);text-align:center}
 .demo-note{margin-top:28px;padding:14px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);font-size:11px;line-height:1.45}
 @media(min-width:700px){body{background:#090909}.app{border-left:1px solid rgba(255,255,255,.04);border-right:1px solid rgba(255,255,255,.04)}}
+
+/* UI refinement */
+body{background:
+  radial-gradient(900px 480px at 50% -220px,rgba(215,255,75,.075),transparent 68%),
+  var(--bg)}
+.app{padding-left:18px;padding-right:18px}
+.topbar{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:14px}
+.brand{font-size:21px;letter-spacing:-.055em}
+.city{margin-top:3px;font-size:9px;letter-spacing:.19em}
+.hero{padding-top:30px}
+.hero .kicker{margin-bottom:15px}
+.hero h1{font-size:clamp(52px,15vw,82px);line-height:.84;letter-spacing:-.075em}
+.hero p{max-width:360px;font-size:14px;line-height:1.55;margin-top:20px;margin-bottom:24px}
+.search{height:56px;border-radius:18px;background:#131313;border-color:rgba(255,255,255,.1);transition:border-color .25s,background .25s}
+.search:focus-within{border-color:rgba(215,255,75,.55);background:#171717}
+.chips{padding-top:12px;gap:7px}
+.chip{padding:9px 14px;border-color:rgba(255,255,255,.1);transition:.22s ease}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#111}
+.section{margin-top:42px}
+.section-head{margin-bottom:16px}
+.section-head h2{font-size:25px;letter-spacing:-.05em}
+.section-head button{color:#85827d}
+.feature-card{flex-basis:91%;height:420px;border-radius:24px}
+.feature-card:after{background:linear-gradient(180deg,rgba(0,0,0,.02) 28%,rgba(0,0,0,.92) 100%)}
+.feature-info{left:20px;right:20px;bottom:20px}
+.feature-info h3{font-size:36px;line-height:.95}
+.rank-list{gap:8px}
+.rank-card{grid-template-columns:38px 72px 1fr auto;padding:9px;border-radius:18px;background:#111;border-color:rgba(255,255,255,.085);transition:transform .2s,background .2s}
+.rank-card:active{transform:scale(.985);background:#171717}
+.rank-card img{width:72px;height:72px;border-radius:13px}
+.rank-no{font-size:18px;letter-spacing:-.05em}
+.vote-btn{width:46px;height:46px;border-radius:15px;background:#191919}
+.vote-btn b{font-size:17px}
+.deals{gap:8px}
+.deal{min-height:175px;border-radius:18px;padding:15px}
+.deal-value{font-size:42px}
+.new-grid{gap:8px}
+.new-card{border-radius:18px;border-color:rgba(255,255,255,.085)}
+.bottom-nav{bottom:max(10px,env(safe-area-inset-bottom));border-radius:20px;padding:6px;background:rgba(18,18,18,.84);box-shadow:0 12px 45px rgba(0,0,0,.45)}
+.nav-btn{padding:11px 5px;border-radius:14px;font-size:9px}
+.nav-btn.active{background:var(--accent)}
+.sheet{backdrop-filter:blur(5px)}
+.sheet-card{background:#101010;border-radius:26px 26px 0 0}
+.sheet-hero{height:350px}
+.sheet-body{padding:20px}
+.sheet-title{font-size:42px;line-height:.94}
+.info-row{border-color:rgba(255,255,255,.09)}
+.coupon{border-radius:18px}
+@media(max-width:380px){
+  .app{padding-left:14px;padding-right:14px}
+  .hero h1{font-size:50px}
+  .rank-card{grid-template-columns:32px 64px 1fr auto;gap:9px}
+  .rank-card img{width:64px;height:64px}
+}
+
 </style>
 </head>
 <body>
 <div class="app">
   <header class="topbar">
-    <div><div class="brand">SUSHI KRAKÓW</div><div class="city">city guide / beta</div></div>
+    <div><div class="brand">SUSHI KRAKÓW</div><div class="city">Kraków / city guide</div></div>
     <button class="icon-btn" id="randomBtn" aria-label="Losuj restaurację">✦</button>
   </header>
 
   <section class="view active" data-view="home">
     <div class="hero">
-      <div class="kicker">Kraków / sushi guide</div>
-      <h1>Najlepsze sushi.<br>Jedno miejsce.</h1>
-      <p>Ranking lokali, rekomendacje, nowe miejsca i kody dla użytkowników aplikacji.</p>
+      <div class="kicker">Sushi guide / Kraków</div>
+      <h1>Gdzie dziś<br>na sushi?</h1>
+      <p>Najciekawsze sushi w Krakowie - wybierane przez ludzi, którzy naprawdę je jedzą.</p>
       <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Szukaj restauracji lub dzielnicy"></label>
       <div class="chips" id="chips"><button class="chip active" data-filter="all">Wszystko</button><button class="chip" data-filter="promo">Promocje</button><button class="chip" data-filter="new">Nowe</button><button class="chip" data-filter="featured">Wyróżnione</button></div>
     </div>
@@ -143,7 +198,7 @@ h1{font-size:clamp(44px,12vw,74px);line-height:.88;letter-spacing:-.07em;margin:
       <div class="section-head"><h2>Nowe miejsca</h2><button data-go="new">Zobacz nowe →</button></div>
       <div class="new-grid" id="homeNew"></div>
     </section>
-    <div class="demo-note">Wersja MVP demonstracyjna. Dane kontaktowe, promocje i część opisów są przykładowe i służą do prototypowania produktu.</div>
+    
   </section>
 
   <section class="view" data-view="ranking">
