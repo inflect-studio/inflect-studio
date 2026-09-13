@@ -1,0 +1,37 @@
+name: Deploy Sushi Krakow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "sushikrakow/**"
+      - ".github/workflows/deploy-sushikrakow.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Deploy Sushi Krakow via SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          sshpass -p "$SFTP_PASSWORD" sftp -o StrictHostKeyChecking=accept-new -P "$SFTP_PORT" "$SFTP_USER@$SFTP_HOST" <<'SFTP_EOF'
+          cd inflect_studio
+          -mkdir sushikrakow
+          cd sushikrakow
+          put sushikrakow/index.php
+          put sushikrakow/restaurants.json
+          bye
+          SFTP_EOF
