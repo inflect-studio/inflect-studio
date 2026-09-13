@@ -44,6 +44,45 @@ img,video{display:block;width:100%;height:100%;object-fit:cover}.view{display:no
 .masonry-subnav{pointer-events:auto}
 .masonry-subnav button{pointer-events:auto;cursor:pointer}
 </style>
+<style id="masonry-mobile-grid-fix">
+/* Force true two-column mobile layouts while preserving intrinsic media ratios */
+.m-natural{
+  columns:auto !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:8px !important;
+  align-items:start;
+}
+.m-natural .m-item{
+  width:100%;
+  min-width:0;
+  margin:0 !important;
+  break-inside:auto;
+}
+.m-natural .m-item img,
+.m-natural .m-item video,
+.m-kinetic .m-item img,
+.m-kinetic .m-item video{
+  display:block;
+  width:100%;
+  height:auto !important;
+  object-fit:contain;
+}
+.m-kinetic{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:8px !important;
+  align-items:start;
+}
+.m-kinetic .m-col{
+  min-width:0;
+  width:100%;
+}
+@media(min-width:760px){
+  .m-natural{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:12px !important}
+  .m-kinetic{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:12px !important}
+}
+</style>
 </head><body>
 <nav class="nav"><a class="brand" href="../index.php">Inflect Studio</a><div class="switch"><button class="active" data-view="masonry">Masonry Study</button></div></nav>
 <div class="caption"><b id="ct">Kinetic Masonry</b><span id="cc">Selected fragments / scroll</span></div>
