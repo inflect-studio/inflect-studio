@@ -71,51 +71,47 @@ img,video{display:block;width:100%;height:100%;object-fit:cover}.view{display:no
 </div></section>
 </main>
 <script>
-const $$=(s,p=document)=>[...p.querySelectorAll(s)];
-const labels={masonry:['Kinetic Masonry','Selected fragments / scroll'],stream:['Infinite Visual Stream','Drag the archive'],chaos:['Editorial Chaos','Selected fragments / scroll']};
+const $$=(s,p=document)=>Array.from((p||document).querySelectorAll(s));
 function hydrate(root){
   if(!root)return;
-  $('video[data-src]',root).forEach(v=>{
-    if(!v.src){
-      v.autoplay=true;
-      v.muted=true;
-      v.loop=true;
-      v.playsInline=true;
-      v.preload='metadata';
-      v.src=v.dataset.src;
-      v.addEventListener('loadedmetadata',()=>{
-        if(v.videoWidth&&v.videoHeight){
-          v.style.aspectRatio=v.videoWidth+' / '+v.videoHeight;
-          v.style.height='auto';
-        }
-        v.play().catch(()=>{});
-      },{once:true});
-      v.load();
-    }else{
-      v.play().catch(()=>{});
-    }
+  $$('video[data-src]',root).forEach(v=>{
+    v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+    v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    if(!v.getAttribute('src')){ v.setAttribute('src',v.dataset.src); v.load(); }
+    const play=()=>v.play().catch(()=>{});
+    if(v.readyState>=2) play(); else v.addEventListener('canplay',play,{once:true});
   });
 }
-function show(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('.switch button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));ct.textContent=labels[id][0];cc.textContent=labels[id][1];scrollTo(0,0);hydrate(document.querySelector('#'+id));}
-$('.switch button').forEach(b=>b.onclick=()=>show(b.dataset.view));hydrate(masonry);
-$('[data-masonry]').forEach(b=>b.onclick=()=>{
-  const mode=b.dataset.masonry;
-  $('[data-masonry]').forEach(x=>x.classList.toggle('active',x===b));
-  $('[data-masonry-mode]').forEach(x=>x.classList.toggle('active',x.dataset.masonryMode===mode));
-  const names={natural:['Natural Masonry','Original ratios / compact'],kinetic:['Kinetic Masonry','Original ratios / differential scroll'],editorial:['Editorial Masonry','Original ratios / composed rhythm']};
-  ct.textContent=names[mode][0];cc.textContent=names[mode][1];
-  hydrate(document.querySelector('[data-masonry-mode="'+mode+'"]'));
-  parallax();
+const modes={
+ natural:['Natural Masonry','Original ratios / compact'],
+ kinetic:['Kinetic Masonry','Original ratios / differential scroll'],
+ editorial:['Editorial Masonry','Original ratios / composed rhythm']
+};
+$$('[data-masonry]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const mode=btn.dataset.masonry;
+    $$('[data-masonry]').forEach(x=>x.classList.toggle('active',x===btn));
+    $$('[data-masonry-mode]').forEach(x=>{
+      const active=x.dataset.masonryMode===mode;
+      x.classList.toggle('active',active);
+      if(active) hydrate(x);
+    });
+    document.getElementById('ct').textContent=modes[mode][0];
+    document.getElementById('cc').textContent=modes[mode][1];
+    window.scrollTo(0,0);
+    parallax();
+  });
 });
-// masonry differential motion
-let raf=0;function parallax(){raf=0;if(!masonry.classList.contains('active') || !document.querySelector('[data-masonry-mode="kinetic"]').classList.contains('active')){ $('.m-col').forEach(c=>c.style.transform=''); return; }const y=scrollY;$('.m-col').forEach((c,i)=>{const rates=[-.018,.025,-.01];c.style.transform=`translate3d(0,${y*rates[i]}px,0)`})}addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(parallax)},{passive:true});
-// stream deterministic scattered field
-const world=document.querySelector('.stream-world'),sis=$$('.stream-item');const spots=[[70,100],[510,40],[850,190],[180,510],[650,460],[910,650],[50,860],[430,800],[790,980],[160,1210],[600,1170],[900,1350],[60,1530],[440,1490],[780,1680],[180,1880],[610,1850],[900,1990],[360,300],[760,720],[330,1030],[720,1420],[90,2050],[620,2080]];
-sis.forEach((el,i)=>{const p=spots[i%spots.length];el.style.left=p[0]+'px';el.style.top=p[1]+'px';el.style.transform=`rotate(${((i*17)%9)-4}deg)`});
-let tx=0,ty=0,cx=0,cy=0,drag=false,lx=0,ly=0;
-stream.onpointerdown=e=>{drag=true;lx=e.clientX;ly=e.clientY;stream.setPointerCapture(e.pointerId)};
-stream.onpointermove=e=>{if(!drag)return;tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY};
-stream.onpointerup=()=>drag=false;stream.onpointercancel=()=>drag=false;
-stream.addEventListener('wheel',e=>{tx-=e.deltaX*.5;ty-=e.deltaY*.5},{passive:true});
-function tick(){cx+=(tx-cx)*.075;cy+=(ty-cy)*.075;world.style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;requestAnimationFrame(tick)}tick();
+hydrate(document.querySelector('[data-masonry-mode="natural"]'));
+let raf=0;
+function parallax(){
+  raf=0;
+  const kinetic=document.querySelector('[data-masonry-mode="kinetic"]');
+  const cols=$$('.m-col');
+  if(!kinetic || !kinetic.classList.contains('active')){cols.forEach(x=>x.style.transform='');return;}
+  const rates=[-.018,.025,-.01];
+  cols.forEach((el,i)=>el.style.transform='translate3d(0,'+(window.scrollY*(rates[i]||0))+'px,0)');
+}
+window.addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(parallax)},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const active=document.querySelector('[data-masonry-mode].active');hydrate(active);}});
 </script></body></html>
